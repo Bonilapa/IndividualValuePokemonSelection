@@ -1,6 +1,7 @@
 import com.sun.javaws.IconUtil;
 import com.sun.xml.internal.ws.api.model.wsdl.WSDLOutput;
 
+import java.io.Console;
 import java.sql.SQLOutput;
 import java.util.*;
 
@@ -12,161 +13,224 @@ public class Main {
 
         //вбить базовые статы
         STATS baseStats = new STATS(151,
-                                143,
-                                155);
+                143,
+                155);
 
-
-        new Main().setCpCoefs(cpmult, baseStats);
+        //new Main().setCpCoefs(cpmult, baseStats);
         // пустить цикл
-            //сунуть в СТАТС базовые + ИВ
-            //увеличивать уровень с 0 до тех пор пока ЦП не станет больше установки
-            //вывести статы цп и уровень на экран
-            //изменить ИВ
-
-        //processing(baseStats, cpmult, maxCP);
+        //сунуть в СТАТС базовые + ИВ
+        //увеличивать уровень с 0 до тех пор пока ЦП не станет больше установки
+        //вывести статы цп и уровень на экран
+        //изменить ИВ
+        new Main().processing(baseStats, cpmult, maxCP);
 
 
         //сортировку и удаление точно худших
     }
 
-    public static void processing(STATS stats, CPMULT cpmult, short maxCP){
+    public void processing(STATS baseStats, CPMULT cpmult, short maxCP) {
         short ivMax = 15;
         short ivMin = 0;
         short finalATK = 0;
         short finalDEF = 0;
         short finalSTA = 0;
-        Double lvl=1.0;
-        short cp = 0;
-        short prevCP;
-        Double prevLvl;
+        Double lvl;
+        short cp;
+        short prevCP = 0;
+        Double prevLvl = 0.5;
+        Double mult;
+        List<PokeData> pokeDataListTop = new LinkedList<>();
+        List<PokeData> pokeDataListMaybe = new LinkedList<>();
+        PokeData pokeData;
+        WR wrTop = new WR("IvysaurTop.txt");
+        WR wrMaybe = new WR("IvysaurMaybe.txt");
+        boolean forty = false;
 
-        for(short atk = ivMin; atk <= ivMax; atk++) {
+        for (short atk = ivMin; atk <= ivMax; atk++) {
             for (short def = ivMin; def <= ivMax; def++) {
                 for (short sta = ivMin; sta <= ivMax; sta++) {
 
-                    do{
-                        prevCP = cp;
-                        prevLvl = lvl;
-                        lvl = lvl + (float)0.5;
+                    cp = 0;
+                    lvl = 1.0;
+                    prevCP = cp;
+                    prevLvl = lvl;
+                    forty = false;
 
-                        cp = (short)(
-                                Math.round((stats.atk + atk) * cpmult.getCpMultiplier(lvl))
-                                *
-                                Math.sqrt(Math.round((stats.def + def) * cpmult.getCpMultiplier(lvl)))
-                                *
-                                Math.sqrt(Math.round((stats.sta + sta) * cpmult.getCpMultiplier(lvl)))
-                                *
-                                lvl * lvl
-                                /
-                                10
-                        );
-                    }while(cp <= maxCP && lvl <= (float)41);
+                    while (lvl < 40.9) {
 
-                    finalATK = (short)(Math.round((stats.atk + atk) * cpmult.getCpMultiplier(prevLvl)));
-                    finalDEF = (short)(Math.round((stats.def + def) * cpmult.getCpMultiplier(prevLvl)));
-                    finalSTA = (short)(Math.round((stats.sta + sta) * cpmult.getCpMultiplier(prevLvl)));
+                        if (lvl.equals(40.5))
+                            lvl += 0.5;
 
-                    System.out.println(
-                            prevCP + " " +
-                            finalATK + " " +
-                            finalDEF + " " +
-                            finalSTA + " " +
-                            (prevLvl)
-                    );
+                        mult = cpmult.getCpMultiplier(lvl);
+
+                        STATS s = new STATS(atk, def, sta);
+                        // System.out.println(lvl);
+                        cp = getCP(baseStats,
+                                s,
+                                mult);
+                        if (cp < maxCP) {
+                            prevLvl = lvl;
+                            prevCP = cp;
+                            lvl += 0.5;
+                            if (prevLvl.equals(40.0)) {
+                                forty = true;
+                                pokeData = new PokeData(prevCP, finalATK, atk, finalDEF, def, finalSTA, sta, prevLvl);
+                                pokeDataListMaybe.add(pokeData);
+                                System.out.println(pokeData);
+                            }
+                        } else {
+                            lvl = 41.0;
+                        }
+                    }
+                    mult = cpmult.getCpMultiplier(prevLvl);
+                    finalATK = (short) Math.round(getStat(baseStats.atk,
+                            atk,
+                            mult));
+                    finalDEF = (short) Math.round(getStat(baseStats.def,
+                            def,
+                            mult));
+                    finalSTA = (short) Math.round(getStat(baseStats.sta,
+                            sta,
+                            mult));
+                    if (!forty) {
+                        pokeData = new PokeData(prevCP, finalATK, atk, finalDEF, def, finalSTA, sta, prevLvl);
+                        pokeDataListTop.add(pokeData);
+                    }
+
+
                 }
             }
         }
-
-
-    }
-
-    public void setCpCoefs(CPMULT cpmult, STATS baseStats){
-
-        WR wr = new WR("CpCoefs.txt");
-        R r = new R("Ivysaur.txt");
-        TreeMap map = new TreeMap<Double, Double>();
-        TreeMap<Double, Short> lvlToCp = r.read("short");
-        Double lvl = 1.0;
-        Short cp;
-        Double coef;
-        Double cpMultValue;
-        //Scanner scanner = new Scanner(System.in).useLocale(Locale.US);
-        STATS ivStats = new STATS(15,15,15);
-
-        while (lvl <= 41) {
-
-            //System.out.println(lvl);
-            cpMultValue = cpmult.getCpMultiplier(lvl);
-            cp = lvlToCp.get(lvl);
-            coef = 10
-                    *
-                    cp
-                    /
-                    (getAtk(baseStats.atk,
-                            ivStats.atk,
-                            cpMultValue)
-                    *
-                    getDef(baseStats.def,
-                            ivStats.def,
-                            cpMultValue)
-                    *
-                    getSta(baseStats.sta,
-                            ivStats.sta,
-                            cpMultValue)
-                    );
-
-            map.put(lvl.toString(), coef.toString());
-
-            //System.out.println(cp + "  " + getCP(baseStats, ivStats, cpMultValue, coef));
-            lvl += 0.5;
-            if(lvl == 40.5)
-                lvl += 0.5;
+        //clarify lists
+        System.out.println(pokeDataListTop.size());
+        for (int i = 0; i < pokeDataListTop.size(); i++) {
+            for (int j = i + 1; j < pokeDataListTop.size(); j++) {
+                if (pokeDataListTop.get(i).compareTo(pokeDataListTop.get(j)) < 0) {
+                    pokeDataListTop.remove(i);
+                    i = 0;
+                    j = 1;
+                } else if (pokeDataListTop.get(i).compareTo(pokeDataListTop.get(j)) > 0) {
+                    pokeDataListTop.remove(j);
+                    j--;
+                }
+            }
         }
-        System.out.println("Writing");
+        System.out.println(pokeDataListTop.size());
+        System.out.println(pokeDataListMaybe.size());
+            for (int i = 0; i < pokeDataListMaybe.size(); i++) {
+                for (int j = i + 1; j < pokeDataListMaybe.size(); j++) {
+                    if (pokeDataListMaybe.get(i).compareTo(pokeDataListMaybe.get(j)) < 0) {
+                        pokeDataListMaybe.remove(i);
+                        i = 0;
+                        j = 1;
+                    } else if (pokeDataListMaybe.get(i).compareTo(pokeDataListMaybe.get(j)) > 0) {
+                        pokeDataListMaybe.remove(j);
+                        j--;
+                    }
+                }
+            }
+        System.out.println(pokeDataListMaybe.size());
+        //file-output
+        for (PokeData pd :
+                pokeDataListMaybe) {
 
-        for (Object m:
-             map.entrySet()) {
-
-            Map.Entry<Double, Double> e = (Map.Entry<Double, Double>)m;
-            wr.write(String.valueOf(e.getKey()), String.valueOf(e.getValue()));
-
+            wrMaybe.write(pd.toString());
         }
-
     }
 
-    public Short getAtk(Short baseAtk, Short ivAtk, double cpMultValue){
 
-        return (short)Math.round((baseAtk + ivAtk) * cpMultValue);
+//    public void setCpCoefs(CPMULT cpmult, STATS baseStats){
+//
+//        R r = new R("Blastoise151515.txt");
+//        TreeMap map = new TreeMap<Double, Double>();
+//        //TreeMap<Double, Short> lvlToCp = r.read("short");
+//        Double lvl = 1.0;
+//        Short cp;
+//        Short cpGot;
+//        Double cpMultValue;
+//        //Scanner scanner = new Scanner(System.in).useLocale(Locale.US);
+//        STATS ivStats = new STATS(15,15,15);
+//
+//        while (lvl <= 41) {
+//
+//            //System.out.println(lvl);
+//            cpMultValue = cpmult.getCpMultiplier(lvl);
+//            //cp = lvlToCp.get(lvl);
+//            System.out.println(">>>>>" + lvl + " " +
+//                    String.valueOf(getAtk(baseStats.atk,
+//                            ivStats.atk)
+//                            *
+//                            getDef(baseStats.def,
+//                                    ivStats.def)
+//                            *
+//                            getSta(baseStats.sta,
+//                                    ivStats.sta)
+//                            *
+//                            cpMultValue
+//                            *
+//                            cpMultValue
+//                            /
+//                            10) + "<<<<<");
+//            System.out.println("____" + lvl + " " + getCP(baseStats, ivStats, cpMultValue) + "____");
+////            if(!cp.equals(cpGot))
+////                System.out.println(lvl + " " + cp + " " + cpGot);
+//
+//            //System.out.println(cp + "  " + getCP(baseStats, ivStats, cpMultValue, coef));
+//            lvl += 0.5;
+//            if(lvl == 40.5)
+//                lvl += 0.5;
+//        }
+//
+//    }
+
+    public Double getStat(Short baseAtk, Short ivAtk, double cpMultValue) {
+//        System.out.println((baseAtk + ivAtk) * cpMultValue);
+        return (baseAtk + ivAtk) * cpMultValue;
     }
 
-    public Double getDef(Short baseDef, Short ivDef, double cpMultValue){
-
-        return (double)Math.sqrt(Math.round((baseDef + ivDef) * cpMultValue));
-    }
-
-    public Double getSta(Short baseSta, Short ivSta, double cpMultValue){
-
-        return (double)Math.sqrt(Math.round((baseSta + ivSta) * cpMultValue));
-    }
-
-    public short getCP(STATS baseStats, STATS ivStats, double cpMultValue, double coef){
+    public short getCP(STATS baseStats, STATS ivStats, double cpMultValue) {
+//        System.out.println(
+//                (baseStats.atk +
+//                        ivStats.atk)
+//                        *
+//                        Math.sqrt(baseStats.def +
+//                                ivStats.def)
+//                        *
+//                        Math.sqrt(baseStats.sta +
+//                                ivStats.sta)
+//                        *
+//                        cpMultValue
+//                        *
+//                        cpMultValue
+//                        /
+//                        10);
         return
-                (short)
-                    (getAtk(baseStats.atk,
-                            ivStats.atk,
-                            cpMultValue)
-                *
-                    getDef(baseStats.def,
-                            ivStats.def,
-                            cpMultValue)
-                *
-                    getSta(baseStats.sta,
-                            ivStats.sta,
-                            cpMultValue)
-                *
-                    coef
-                /
-                10);
+                (short) (
+                        (baseStats.atk +
+                                ivStats.atk)
+                                *
+                                Math.sqrt(baseStats.def +
+                                        ivStats.def)
+                                *
+                                Math.sqrt(baseStats.sta +
+                                        ivStats.sta)
+                                *
+                                cpMultValue
+                                *
+                                cpMultValue
+                                /
+                                10);
 
+    }
+
+    public boolean ifThereAreSmallest(List<PokeData> list) {
+
+        for (int i = 0; i < list.size(); i++) {
+            for (int j = 1; j < list.size(); j++) {
+                if (list.get(i).compareTo(list.get(j)) > 0 || list.get(i).compareTo(list.get(j)) < 0)
+                    return true;
+            }
+        }
+        return false;
     }
 }

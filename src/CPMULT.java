@@ -7,7 +7,6 @@ public class CPMULT {
     TreeMap<Double, Double> treeMap;
 
     public Double getCpMultiplier(double lvl){
-
         return treeMap.get(lvl);
     }
 

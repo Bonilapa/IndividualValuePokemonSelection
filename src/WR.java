@@ -11,7 +11,7 @@ public class WR {
 
     }
 
-    public boolean write(String lvl, String coef){
+    public boolean write(String lvl, String coef) {
 
         try {
 
@@ -22,7 +22,7 @@ public class WR {
             e.printStackTrace();
         }
 
-        if(writer != null){
+        if (writer != null) {
 
             try {
 
@@ -44,7 +44,46 @@ public class WR {
 
             return true;
 
-        }else{
+        } else {
+
+            return false;
+        }
+    }
+
+    public boolean write(String pokeData) {
+
+        try {
+
+            writer = new FileWriter(file, true);
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+
+        if (writer != null) {
+
+            try {
+
+                writer.write(pokeData + '\n');
+
+            } catch (IOException e) {
+
+                e.printStackTrace();
+
+            }
+            try {
+
+                writer.close();
+
+            } catch (IOException e) {
+
+                e.printStackTrace();
+            }
+
+            return true;
+
+        } else {
 
             return false;
         }
