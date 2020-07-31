@@ -15,17 +15,45 @@ public class Main {
         STATS baseStats = new STATS(151,
                 143,
                 155);
-
+        //new Main().cpMultsGrow();
         //new Main().setCpCoefs(cpmult, baseStats);
         // пустить цикл
         //сунуть в СТАТС базовые + ИВ
         //увеличивать уровень с 0 до тех пор пока ЦП не станет больше установки
         //вывести статы цп и уровень на экран
         //изменить ИВ
-        new Main().processing(baseStats, cpmult, maxCP);
+        //new Main().set405cpMultiplier(baseStats);
+//        new Main().processing(baseStats, cpmult, maxCP);
 
 
         //сортировку и удаление точно худших
+    }
+    public void cpMultsGrow(){
+        R r = new R("CpMults.txt");
+        TreeMap<Double, Double> map;
+        TreeMap<String, Double> map2 = new TreeMap<>();
+        ArrayList<Double> list = new ArrayList<>();
+        map = r.read("double");
+        for(double i = 1.0; i<=39.5; i+=0.5){
+            //System.out.println((i+0.5) + "-" + (i) + " " + (map.get(i+0.5) - map.get(i)));
+            map2.put((i+0.5) + "-" + (i), (map.get(i+0.5) - map.get(i)));
+            //list.add(map.get(i));
+        }
+        System.out.println(map2);
+        for(double i = 1.5; i<=39.5; i+=0.5){
+            System.out.println(String.valueOf(i+0.5) +"-"+ String.valueOf(i) +
+                    "-" + String.valueOf(i) +"-"+ String.valueOf(i-0.5) +
+                    " " +
+                    (       map2.get(String.valueOf(i+0.5) +"-"+ String.valueOf(i))
+                            -
+                            map2.get(String.valueOf(i) +"-"+ String.valueOf(i-0.5))
+                    ));
+            //map2.put((i+0.5) + "-" + (i), (map.get(i+0.5) - map.get(i)));
+        }
+//        for (int i = 0; i < list.size()-1; i++) {
+//
+//            System.out.println((i+1) + " - " + (i) + " " + (list.get(i+1)-list.get(i)));
+//        }
     }
 
     public void processing(STATS baseStats, CPMULT cpmult, short maxCP) {
@@ -138,7 +166,36 @@ public class Main {
         }
     }
 
-
+    public void set405cpMultiplier(STATS baseStats){
+        R r = new R("40.5IvysaurcpList.txt");
+        WR wr = new WR("CpMults40.5.txt");
+        ArrayList<Short> cps = new ArrayList<>();
+        cps = r.readList();
+        Double cpMultCalc;
+        STATS ivStats;
+        for (short atk = 0; atk <= 0; atk++) {
+            for (short def = 0; def <= 2; def++) {
+                for (short sta = 0; sta <= 15; sta++) {
+                    //System.out.println(cps.get(atk*15*15 + (def*16) + sta));
+                    cpMultCalc = Math.sqrt(10
+                                            *
+                                            cps.get(atk*16*16 + (def*16) + sta)
+                                            /
+                                            (
+                                                    (baseStats.atk + atk)
+                                                            *
+                                                            Math.sqrt(baseStats.def + def)
+                                                            *
+                                                            Math.sqrt(baseStats.atk + atk)
+                                            )
+                                            );
+                    wr.write(String.valueOf(cpMultCalc));
+                    ivStats = new STATS(atk, def,sta);
+                    System.out.println(atk+ " " + def + " " + sta + " " + getCP(baseStats,ivStats, cpMultCalc));
+                }
+            }
+        }
+    }
 //    public void setCpCoefs(CPMULT cpmult, STATS baseStats){
 //
 //        R r = new R("Blastoise151515.txt");

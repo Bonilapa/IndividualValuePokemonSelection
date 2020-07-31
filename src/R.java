@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.ArrayList;
 import java.util.TreeMap;
 
 public class R {
@@ -58,5 +59,34 @@ public class R {
             return temp2;
         else
             return null;
+    }
+    public ArrayList<Short> readList(){
+        ArrayList<Short> temp1 = new ArrayList();
+
+        String line;
+        try {
+
+            line = reader.readLine();
+            while (line != null) {
+
+                temp1.add(Short.valueOf(line));
+
+                line = reader.readLine();
+            }
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+
+        try {
+
+            reader.close();
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+        return temp1;
     }
 }
