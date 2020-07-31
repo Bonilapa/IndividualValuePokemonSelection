@@ -9,7 +9,7 @@ public class Main {
     public static void main(String[] args) {
         CPMULT cpmult = new CPMULT();
         //вбить максимум ЦП
-        short maxCP = 1500;
+        short maxCP = 2500;
 
 
         PokeData.name = "Regice";
@@ -74,7 +74,7 @@ public class Main {
         Double mult;
         List<PokeData> pokeDataListTop = new LinkedList<>();
         PokeData pokeData;
-        WR wrTop = new WR("GreatLeagueTop.txt");
+        WR wrTop = new WR("UltraLeagueTop.txt");
         boolean forty = false;
 
         for (short atk = ivMin; atk <= ivMax; atk++) {
