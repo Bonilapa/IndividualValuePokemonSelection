@@ -11,10 +11,15 @@ public class Main {
         //вбить максимум ЦП
         short maxCP = 1500;
 
+
+        PokeData.name = "Regice";
+        PokeData.atkRate = (double) 318 /827;
+        PokeData.defRate = (double) 4 /827;
+        PokeData.staRate = (double) 191 /827;
         //вбить базовые статы
-        STATS baseStats = new STATS(151,
-                143,
-                155);
+        STATS baseStats = new STATS(179,
+                                    309,
+                                    190);
         //new Main().cpMultsGrow();
         //new Main().setCpCoefs(cpmult, baseStats);
         // пустить цикл
@@ -23,7 +28,7 @@ public class Main {
         //вывести статы цп и уровень на экран
         //изменить ИВ
         //new Main().set405cpMultiplier(baseStats);
-//        new Main().processing(baseStats, cpmult, maxCP);
+        new Main().processing(baseStats, cpmult, maxCP);
 
 
         //сортировку и удаление точно худших
@@ -64,14 +69,12 @@ public class Main {
         short finalSTA = 0;
         Double lvl;
         short cp;
-        short prevCP = 0;
-        Double prevLvl = 0.5;
+        short prevCP;
+        Double prevLvl;
         Double mult;
         List<PokeData> pokeDataListTop = new LinkedList<>();
-        List<PokeData> pokeDataListMaybe = new LinkedList<>();
         PokeData pokeData;
-        WR wrTop = new WR("IvysaurTop.txt");
-        WR wrMaybe = new WR("IvysaurMaybe.txt");
+        WR wrTop = new WR("GreatLeagueTop.txt");
         boolean forty = false;
 
         for (short atk = ivMin; atk <= ivMax; atk++) {
@@ -96,15 +99,15 @@ public class Main {
                         cp = getCP(baseStats,
                                 s,
                                 mult);
-                        if (cp < maxCP) {
+                        if (cp <= maxCP) {
                             prevLvl = lvl;
                             prevCP = cp;
                             lvl += 0.5;
                             if (prevLvl.equals(40.0)) {
-                                forty = true;
-                                pokeData = new PokeData(prevCP, finalATK, atk, finalDEF, def, finalSTA, sta, prevLvl);
-                                pokeDataListMaybe.add(pokeData);
-                                System.out.println(pokeData);
+//                                forty = true;
+                                //pokeData = new PokeData(prevCP, finalATK, atk, finalDEF, def, finalSTA, sta, prevLvl);
+                                //pokeDataListMaybe.add(pokeData);
+                                //System.out.println(pokeData);
                             }
                         } else {
                             lvl = 41.0;
@@ -121,7 +124,14 @@ public class Main {
                             sta,
                             mult));
                     if (!forty) {
-                        pokeData = new PokeData(prevCP, finalATK, atk, finalDEF, def, finalSTA, sta, prevLvl);
+                        pokeData = new PokeData(prevCP,
+                                                finalATK,
+                                                atk,
+                                                finalDEF,
+                                                def,
+                                                finalSTA,
+                                                sta,
+                                                prevLvl);
                         pokeDataListTop.add(pokeData);
                     }
 
@@ -133,10 +143,11 @@ public class Main {
         System.out.println(pokeDataListTop.size());
         for (int i = 0; i < pokeDataListTop.size(); i++) {
             for (int j = i + 1; j < pokeDataListTop.size(); j++) {
+//                System.out.println(i + " " + j + " " + pokeDataListTop.size());
                 if (pokeDataListTop.get(i).compareTo(pokeDataListTop.get(j)) < 0) {
                     pokeDataListTop.remove(i);
                     i = 0;
-                    j = 1;
+                    j = 0;
                 } else if (pokeDataListTop.get(i).compareTo(pokeDataListTop.get(j)) > 0) {
                     pokeDataListTop.remove(j);
                     j--;
@@ -144,25 +155,25 @@ public class Main {
             }
         }
         System.out.println(pokeDataListTop.size());
-        System.out.println(pokeDataListMaybe.size());
-            for (int i = 0; i < pokeDataListMaybe.size(); i++) {
-                for (int j = i + 1; j < pokeDataListMaybe.size(); j++) {
-                    if (pokeDataListMaybe.get(i).compareTo(pokeDataListMaybe.get(j)) < 0) {
-                        pokeDataListMaybe.remove(i);
-                        i = 0;
-                        j = 1;
-                    } else if (pokeDataListMaybe.get(i).compareTo(pokeDataListMaybe.get(j)) > 0) {
-                        pokeDataListMaybe.remove(j);
-                        j--;
-                    }
-                }
-            }
-        System.out.println(pokeDataListMaybe.size());
+//        System.out.println(pokeDataListMaybe.size());
+//            for (int i = 0; i < pokeDataListMaybe.size(); i++) {
+//                for (int j = i + 1; j < pokeDataListMaybe.size(); j++) {
+//                    if (pokeDataListMaybe.get(i).compareTo(pokeDataListMaybe.get(j)) < 0) {
+//                        pokeDataListMaybe.remove(i);
+//                        i = 0;
+//                        j = 1;
+//                    } else if (pokeDataListMaybe.get(i).compareTo(pokeDataListMaybe.get(j)) > 0) {
+//                        pokeDataListMaybe.remove(j);
+//                        j--;
+//                    }
+//                }
+//            }
+//        System.out.println(pokeDataListMaybe.size());
         //file-output
         for (PokeData pd :
-                pokeDataListMaybe) {
+                pokeDataListTop) {
 
-            wrMaybe.write(pd.toString());
+            wrTop.write(pd.toString());
         }
     }
 
