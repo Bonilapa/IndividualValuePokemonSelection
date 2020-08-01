@@ -12,7 +12,7 @@ public class Main {
         short maxCP = 2500;
 
 
-        PokeData.name = "Regice";
+        PokeData.name = "Regirock";
         PokeData.atkRate = (double) 318 /827;
         PokeData.defRate = (double) 4 /827;
         PokeData.staRate = (double) 191 /827;
